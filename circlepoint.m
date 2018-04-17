@@ -1,0 +1,48 @@
+%该函数用于求解各种可能的圆心坐标
+function[finalo,ph,hro,zoom,leng,polym,x4,po2,po1,po4]=circlepoint(p0,p1,p2,p3,p4,o0,g0,w0,w1)
+%po?为斜线的斜率和截距
+po1=polyfit([p0(1),p1(1)],[p0(2),p1(2)],1)
+po2=polyfit([p2(1),p3(1)],[p2(2),p3(2)],1)
+po3=polyfit([o0(1),g0(1)],[o0(2),g0(2)],1)
+po4=polyfit([w0(1),w1(1)],[w0(2),w1(2)],1)
+%以下为作图检验的步骤，但画图部分已经被我注释掉了，有兴趣可以解掉之后看看
+x1=linspace(p0(1),p1(1),10)
+x2=linspace(p1(1),p2(1),4)
+x3=linspace(p2(1),p3(1),12)
+x4=linspace(p3(1),p4(1),100)
+x=[x1,x2,x3,x4]
+%polyline：这是一个多余的检验步骤，将输出值重新编了一个函数检查了一下，结果应该是对的，运行也不占时间
+polym=polyline(x,po1,po2)
+y1=po1(1)*x1+po1(2)
+y2=3800*[1,1,1,1]
+y3=po2(1)*x3+po2(2)
+%将分区进行存储方便输出
+zoom=[y1,y2,y3]
+hro=[x1,x2,x3]
+c0=4300*ones(100)
+y4=c0(1,:)
+l0=po3(1)*[x1,x2,x3]+po3(2)
+%diagram1=plot(x1,y1,x2,y2,x3,y3,x4,y4,[x1,x2,x3],l0)
+%ang=ones(100)
+%ang=ang(1,:)
+%distance=ang
+%apartp=[ang;ang]
+for i=1:100
+    an=polyfit([x4(i),p0(1)],[y4(i),p0(2)],1)
+    %求解滑动面圆弧边上两点连线的中垂线斜率（中垂线定理求圆心）
+    ang(i)=tan(atan(an(1))-3.1415926/2)
+    %distance(i)=an(2)
+    %求解滑动面圆弧边上两点连线的中点坐标（中垂线定理求圆心）
+    apartp(1,i)=(p0(1)+x4(i))/2
+    apartp(2,i)=(p0(2)+y4(i))/2
+    %求解中垂线截距
+    dist(i)=apartp(2,i)-(ang(i)*apartp(1,i))
+    %圆心坐标的求解，根据直线公式推得，第一行为横坐标，第二行为纵坐标。
+    finalo(1,i)=(dist(i)-po3(2))/(po3(1)-ang(i))
+    finalo(2,i)=(po3(1)*finalo(1,i)+po3(2))
+    %求解滑动面圆心角，先求1/2角度（中垂线）
+    k1=finalo(2,i)/finalo(1,i)
+    k2=(apartp(2,i)-finalo(2,i))/(apartp(1,i)-finalo(1,i))
+    ph(i)=2*((atan(k2)+3.1415926)-atan(k1))
+    leng(i)=10+4+12+i
+end
